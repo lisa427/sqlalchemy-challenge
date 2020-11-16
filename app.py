@@ -26,13 +26,13 @@ app = Flask(__name__)
 def welcome():
     """List all available api routes."""
     return (
-        f"Welcome to the Honolulu weather API"
+        f"<strong>Welcome to the Honolulu weather API</strong><br/></br>"
         f"Available Routes:<br/>"
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
-        f"/api/v1.0/<start_date><br/>"
-        f"/api/v1.0/<start_date>/<end_date>"
+        f"/api/v1.0/YYYY-MM-DD <em>--Enter the start date you want</em><br/>"
+        f"/api/v1.0/YYYY-MM-DD/YYYY-MM-DD <em>--Enter the start and end dates you want</em>"
     )
 
 @app.route("/api/v1.0/precipitation")
@@ -80,6 +80,30 @@ def tobs():
     temp_list = [result[0] for result in temp_results]
 
     return jsonify(temp_list)
+
+@app.route("/api/v1.0/<start>")
+def temps_by_start(start):
+    """Return temp data as json for dates greater than and equal to start date"""
+    try:
+        start_dt = dt.datetime.strptime(start, "%Y-%m-%d")
+        session = Session(engine)
+        temp_min = session.query(func.min(Measurement.tobs)).\
+            filter(func.DATE(Measurement.date) > start_dt).all()
+        temp_avg = session.query(func.avg(Measurement.tobs)).\
+            filter(func.DATE(Measurement.date) > start_dt).all()
+        temp_max = session.query(func.max(Measurement.tobs)).\
+            filter(func.DATE(Measurement.date) > start_dt).all()
+        session.close()
+
+        temp_dict = {}
+        temp_dict["minimum_temperature"] = temp_min[0][0]
+        temp_dict["average_temperature"] = temp_avg[0][0]
+        temp_dict["maximum_temperature"] = temp_max[0][0]
+
+        return jsonify(temp_dict)
+
+    except ValueError:
+        return jsonify({"error": f"Date in wrong format"}), 404
 
 
 if __name__ == '__main__':
