@@ -103,8 +103,35 @@ def temps_by_start(start):
         return jsonify(temp_dict)
 
     except ValueError:
-        return jsonify({"error": f"Date in wrong format"}), 404
+        return jsonify({"error": "Date in wrong format"}), 404
 
+@app.route("/api/v1.0/<start>/<end>")
+def temps_by_start_end(start, end):
+    """Return temp data as json for dates between start and end dates"""
+    try:
+        start_dt = dt.datetime.strptime(start, "%Y-%m-%d")
+        end_dt = dt.datetime.strptime(end, "%Y-%m-%d")
+        session = Session(engine)
+        temp_min = session.query(func.min(Measurement.tobs)).\
+            filter(func.DATE(Measurement.date) > start_dt).\
+            filter(func.DATE(Measurement.date) < end_dt).all()
+        temp_avg = session.query(func.avg(Measurement.tobs)).\
+            filter(func.DATE(Measurement.date) > start_dt).\
+            filter(func.DATE(Measurement.date) < end_dt).all()
+        temp_max = session.query(func.max(Measurement.tobs)).\
+            filter(func.DATE(Measurement.date) > start_dt).\
+            filter(func.DATE(Measurement.date) < end_dt).all()
+        session.close()
+
+        temp_dict = {}
+        temp_dict["minimum_temperature"] = temp_min[0][0]
+        temp_dict["average_temperature"] = temp_avg[0][0]
+        temp_dict["maximum_temperature"] = temp_max[0][0]
+
+        return jsonify(temp_dict)
+
+    except ValueError:
+        return jsonify({"error": "Date in wrong format"}), 404
 
 if __name__ == '__main__':
     app.run(debug=True)
