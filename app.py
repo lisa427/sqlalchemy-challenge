@@ -88,11 +88,11 @@ def temps_by_start(start):
         start_dt = dt.datetime.strptime(start, "%Y-%m-%d")
         session = Session(engine)
         temp_min = session.query(func.min(Measurement.tobs)).\
-            filter(func.DATE(Measurement.date) > start_dt).all()
+            filter(func.DATE(Measurement.date) >= start_dt).all()
         temp_avg = session.query(func.avg(Measurement.tobs)).\
-            filter(func.DATE(Measurement.date) > start_dt).all()
+            filter(func.DATE(Measurement.date) >= start_dt).all()
         temp_max = session.query(func.max(Measurement.tobs)).\
-            filter(func.DATE(Measurement.date) > start_dt).all()
+            filter(func.DATE(Measurement.date) >= start_dt).all()
         session.close()
 
         temp_dict = {}
@@ -113,14 +113,14 @@ def temps_by_start_end(start, end):
         end_dt = dt.datetime.strptime(end, "%Y-%m-%d")
         session = Session(engine)
         temp_min = session.query(func.min(Measurement.tobs)).\
-            filter(func.DATE(Measurement.date) > start_dt).\
-            filter(func.DATE(Measurement.date) < end_dt).all()
+            filter(func.DATE(Measurement.date) >= start_dt).\
+            filter(func.DATE(Measurement.date) <= end_dt).all()
         temp_avg = session.query(func.avg(Measurement.tobs)).\
-            filter(func.DATE(Measurement.date) > start_dt).\
-            filter(func.DATE(Measurement.date) < end_dt).all()
+            filter(func.DATE(Measurement.date) >= start_dt).\
+            filter(func.DATE(Measurement.date) <= end_dt).all()
         temp_max = session.query(func.max(Measurement.tobs)).\
-            filter(func.DATE(Measurement.date) > start_dt).\
-            filter(func.DATE(Measurement.date) < end_dt).all()
+            filter(func.DATE(Measurement.date) >= start_dt).\
+            filter(func.DATE(Measurement.date) <= end_dt).all()
         session.close()
 
         temp_dict = {}
